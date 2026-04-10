@@ -1,4 +1,4 @@
-local bit = bit32 or bit
+local bit = rawget(_G, "bit32") or rawget(_G, "bit")
 
 if not bit then
     local floor = math.floor
