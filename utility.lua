@@ -28,8 +28,17 @@ end
 
 function Utility:Connect(Signal, Callback)
     local Connection = Signal:Connect(Callback)
-    Insert(Utility.Connections, Connection)
+    Insert(self.Connections, Connection)
     return Connection
+end
+
+function Utility:DisconnectAll()
+    for _, Connection in ipairs(self.Connections) do
+        if Connection then
+            Connection:Disconnect()
+        end
+    end
+    self.Connections = {}
 end
 
 return Utility
