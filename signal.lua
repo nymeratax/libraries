@@ -1,3 +1,7 @@
+local Gmatch = string.gmatch
+local Insert = table.insert
+local Unpack = table.unpack
+
 local Signal = {}
 Signal.__index = Signal
 Signal.ClassName = "Signal"
@@ -9,120 +13,120 @@ local Registry = {
 	Callbacks = {}
 }
 
-local function split(str: string, sep: string)
-	local result = {}
-	for part in string.gmatch(str, "[^" .. sep .. "]+") do
-		table.insert(result, part)
-	end
-	return result
-end
-
-function Signal.new()
+function Signal.New()
 	local self = setmetatable({}, Signal)
-	self._bindable = Instance.new("BindableEvent")
-	self._argMap = {}
+	self.Bindable = Instance.new("BindableEvent")
+	self.ArgMap = {}
 	return self
 end
 
 function Signal:Fire(...)
-	if not self._bindable then return end
+	if not self.Bindable then return end
 
-	local key = HttpService:GenerateGUID(false)
-	self._argMap[key] = { ... }
+	local Key = HttpService:GenerateGUID(false)
+	self.ArgMap[Key] = { ... }
 
-	self._bindable:Fire(key)
+	self.Bindable:Fire(Key)
 end
 
-function Signal:Connect(fn: (...any) -> ())
-	assert(type(fn) == "function", "Signal:Connect expects a function")
+function Signal:Connect(Fn)
+	assert(type(Fn) == "function", "Signal:Connect expects a function")
 
-	return self._bindable.Event:Connect(function(key)
-		local args = self._argMap[key]
-		self._argMap[key] = nil
+	return self.Bindable.Event:Connect(function(Key)
+		local Args = self.ArgMap[Key]
+		self.ArgMap[Key] = nil
 
-		if args then
-			fn(table.unpack(args))
+		if Args then
+			Fn(Unpack(Args))
 		else
-			warn("[Signal] Missing args for key:", key)
+			warn("[Signal] Missing args for key:", Key)
 		end
 	end)
 end
 
 function Signal:Wait()
-	local key = self._bindable.Event:Wait()
-	local args = self._argMap[key]
-	self._argMap[key] = nil
+	local Key = self.Bindable.Event:Wait()
+	local Args = self.ArgMap[Key]
+	self.ArgMap[Key] = nil
 
-	if args then
-		return table.unpack(args)
+	if Args then
+		return Unpack(Args)
 	end
 end
 
 function Signal:Destroy()
-	if self._bindable then
-		self._bindable:Destroy()
-		self._bindable = nil
+	if self.Bindable then
+		self.Bindable:Destroy()
+		self.Bindable = nil
 	end
 
-	self._argMap = nil
+	self.ArgMap = nil
 	setmetatable(self, nil)
 end
 
-function Signal.Get(name: string)
-	local segments = split(name, "%.")
-	local cursor = Registry.Signals
+function Signal.Get(Name)
+	local Segments = {}
+	for Part in Gmatch(Name, "[^%.]+") do
+		Insert(Segments, Part)
+	end
 
-	for _, part in ipairs(segments) do
-		cursor = cursor and cursor[part]
-		if not cursor then
+	local Cursor = Registry.Signals
+
+	for _, Part in ipairs(Segments) do
+		Cursor = Cursor and Cursor[Part]
+		if not Cursor then
 			return nil
 		end
 	end
 
-	return cursor
+	return Cursor
 end
 
-function Signal.New(name: string?)
-	if typeof(name) ~= "string" then
-		return Signal.new()
+function Signal.NewNamed(Name)
+	if type(Name) ~= "string" then
+		return Signal.New()
 	end
 
-	local segments = split(name, "%.")
-	local cursor = Registry.Signals
+	local Segments = {}
+	for Part in Gmatch(Name, "[^%.]+") do
+		Insert(Segments, Part)
+	end
 
-	for i, part in ipairs(segments) do
-		if i == #segments then
-			cursor[part] = cursor[part] or Signal.new()
-			return cursor[part]
+	local Cursor = Registry.Signals
+
+	for Index, Part in ipairs(Segments) do
+		if Index == #Segments then
+			Cursor[Part] = Cursor[Part] or Signal.New()
+			return Cursor[Part]
 		else
-			cursor[part] = cursor[part] or {}
-			cursor = cursor[part]
+			Cursor[Part] = Cursor[Part] or {}
+			Cursor = Cursor[Part]
 		end
 	end
 end
 
-function Signal.Add(name: string, fn: (...any) -> ())
-	if typeof(name) == "string" and typeof(fn) == "function" then
-		Registry.Callbacks[name] = fn
+function Signal.Add(Name, Fn)
+	if type(Name) == "string" and type(Fn) == "function" then
+		Registry.Callbacks[Name] = Fn
 	end
 end
 
-function Signal.Run(name: string, ...)
-	local cb = Registry.Callbacks[name]
-	if cb then
-		return cb(...)
+function Signal.Run(Name, ...)
+	local Fn = Registry.Callbacks[Name]
+	if Fn then
+		return Fn(...)
 	end
 end
 
-function Signal.Remove(name: string)
-	Registry.Callbacks[name] = nil
+function Signal.Remove(Name)
+	Registry.Callbacks[Name] = nil
 end
 
-function Signal.Wrap(name: string)
+function Signal.Wrap(Name)
 	return function(...)
-		local sig = Signal.Get(name)
-		if sig then
-			sig:Fire(...)
+		local Sig = Signal.Get(Name)
+		if Sig then
+			Sig:Fire(...)
 		end
 	end
 end
