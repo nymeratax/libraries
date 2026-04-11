@@ -8,7 +8,7 @@ function Utility:Create(Class, Properties)
     return Object
 end
 
-function Utility:Create(Class, Properties)
+function Utility:Draw(Class, Properties)
     local Object = Drawing.new(Class)
     for Property, Value in pairs(Properties or {}) do
         Object[Property] = Value
