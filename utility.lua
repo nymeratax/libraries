@@ -1,4 +1,7 @@
 local Utility = {};
+Utility.Connections = {};
+
+local Insert = table.insert
 
 function Utility:Create(Class, Properties)
     local Object = Instance.new(Class)
@@ -24,7 +27,9 @@ function Utility:Merge(Table1, Table2)
 end
 
 function Utility:Connect(Signal, Callback)
-    return Signal:Connect(Callback)
+    local Connection = Signal:Connect(Callback)
+    Insert(Utility.Connections, Connection)
+    return Connection
 end
 
 return Utility
