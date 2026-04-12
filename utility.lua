@@ -1,5 +1,4 @@
 local Utility = {};
-Utility.Connections = {};
 
 local Clamp = math.clamp
 local Min = math.min
@@ -8,8 +7,6 @@ local Max = math.max
 local Vec2 = Vector2.new
 local Dim2 = UDim2.new
 local Color = Color3.new
-
-local Insert = table.insert
 
 function Utility:CreateReactiveTable(InitialData)
     local Data = InitialData or {}
