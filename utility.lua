@@ -122,19 +122,4 @@ function Utility:Merge(Table1, Table2)
     return New
 end
 
-function Utility:Connect(Signal, Callback)
-    local Connection = Signal:Connect(Callback)
-    Insert(self.Connections, Connection)
-    return Connection
-end
-
-function Utility:DisconnectAll()
-    for _, Connection in ipairs(self.Connections) do
-        if Connection then
-            Connection:Disconnect()
-        end
-    end
-    self.Connections = {}
-end
-
 return Utility
